@@ -1,0 +1,28 @@
+<div class="login-body">
+    <div class="login-panel p-fluid">
+        <div class="grid grid-nogutter">
+            <div class="col-12 login-header">
+                <h1>::CBES-INGRESO::</h1>
+                <h2>Bienvenido al Sistema Integrado SICBES</h2>
+                <img src="assets/layout/images/logo.png">
+            </div>
+            <form novalidate (ngSubmit)="verificarUsuario()" [formGroup]="usuario">
+            <div class="col-12">
+                <span class="p-float-label">
+                    <input type="text"  class="p-inputtext-lg" formControlName="usuario" pInputText>
+                    <label>Usuario</label>
+                </span>
+            </div>
+            <div class="col-12">
+                <span class="p-float-label">
+                    <input type="password" class="p-inputtext-lg" formControlName="contrasenia" pInputText>
+                    <label>Contraseña</label>
+                </span>
+            </div>
+            <div class="col-12 button-container">
+                <button pButton type="submit" [disabled]="usuario.invalid" label="Ingresar Sistema" icon="pi pi-user"></button>
+            </div>
+          </form>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,411 @@
+<p-toast key="usuario" [baseZIndex]="99999"></p-toast>
+<div class="grid">
+  <div class="col-12">
+    <div class="card">
+      <h3>Lista de Usuarios</h3>
+      <h5>Visualización, adición, edición y eliminación</h5>
+      <div class="card">
+        <p-table #tablaUsuarios [value]="listaUsuarios" [columns]="columnas" [tableStyle]="{ 'min-width': '50rem' }"
+          responsiveLayout="scroll" [rows]="10" [paginator]="true" [rowsPerPageOptions]="[10,20,30]">
+          <ng-template pTemplate="caption">
+            <div class="flex flex-column md:flex-row md:justify-content-between md:align-items-center">
+              <span class="block mt-2 md:mt-0 p-input-icon-left">
+                <i class="pi pi-search"></i>
+                <input pInputText type="text" placeholder="Buscar..." (input)="buscadorPerfil(tablaUsuarios, $event)"
+                  class="w-full sm:w-auto" />
+              </span>
+              <span class="block mt-2 md:mt-0 p-input-icon-left">
+                <button pButton pRipple label="Nuevo Usuario" icon="pi pi-plus" (click)=" abrirNuevoRecurso()"
+                  class="p-button-success mr-2"></button>
+              </span>
+            </div>
+          </ng-template>
+          <ng-template pTemplate="header">
+            <tr>
+              <th pSortableColumn="usuario">Usuarios<p-sortIcon field="usuario"></p-sortIcon></th>
+              <th pSortableColumn="nombres">Nombre<p-sortIcon field="nombres"></p-sortIcon></th>
+              <th pSortableColumn="apellidos">Apellidos<p-sortIcon field="apellidos"></p-sortIcon></th>
+              <th pSortableColumn="numeroDocumento">CI<p-sortIcon field="numeroDocumento"></p-sortIcon></th>
+              <th pSortableColumn="estadoUsuario">Estado<p-sortIcon field="estadoUsuario"></p-sortIcon></th>
+              <th pSortableColumn="idcNivel">Nivel<p-sortIcon field="idcNivel"></p-sortIcon></th>
+              <th pSortableColumn="idcNivel">Departamento<p-sortIcon field="idcNivel"></p-sortIcon></th>
+              <th>Acciones</th>
+            </tr>
+          </ng-template>
+          <ng-template pTemplate="body" let-usuario>
+            <tr>
+              <td>{{ usuario.usuario }}</td>
+              <td>{{ usuario.nombres }}</td>
+              <td>{{ usuario.primerApellido+" "+usuario.segundoApellido}}</td>
+              <td>{{ usuario.numeroDocumento }}</td>
+              <td>{{ usuario.estadoUsuario }}</td>
+              <td>{{ usuario.idcNivel }}</td>
+              <td>{{ usuario.nombreDepartamento}}</td>
+              <td>
+                <button pButton pRipple icon="pi pi-pencil" class="p-button-rounded p-button-success mr-2" (click)="abrirEditarUsuario(usuario)"></button>
+                <button pButton pRipple icon="pi pi-user" class="p-button-rounded p-button-rounded mr-2" (click)="abrirRestriccionesUsuario(usuario)"></button>
+                <button pButton pRipple icon="pi pi-trash" (click)="mostrarDialogoEliminar(usuario)"
+                  class="p-button-rounded p-button-danger"></button>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+      <p-dialog [(visible)]="guardarUsuarioDialogo" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+        <div class="flex align-items-center justify-content-center">
+          <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;color: #009688;"></i>
+          <span>Desea Guardar Los Cambios</span>
+        </div>
+        <ng-template pTemplate="footer">
+          <button pButton pRipple icon="pi pi-times" class="p-button-rounded" label="No"
+            (click)="guardarUsuarioDialogo= false"></button>
+          <button pButton pRipple icon="pi pi-check" class="p-button-rounded p-button-danger" label="Si"
+            (click)="confirmarGuardadoUsuario()"></button>
+        </ng-template>
+      </p-dialog>
+      <p-dialog [(visible)]="guardarEditarUsuarioDialogo" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+        <div class="flex align-items-center justify-content-center">
+          <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;color: #009688;"></i>
+          <span>Desea Guardar Los Cambios</span>
+        </div>
+        <ng-template pTemplate="footer">
+          <button pButton pRipple icon="pi pi-times" class="p-button-rounded" label="No"
+            (click)="guardarEditarUsuarioDialogo= false"></button>
+          <button pButton pRipple icon="pi pi-check" class="p-button-rounded p-button-danger" label="Si"
+            (click)="guardarEditarUsuario()"></button>
+        </ng-template>
+      </p-dialog>
+      <p-dialog [(visible)]="eliminarUsuarioDialogo" header="Confirm" [modal]="true" [style]="{width:'450px'}">
+        <div class="flex align-items-center justify-content-center">
+          <i class="pi pi-exclamation-triangle mr-3" style="font-size: 2rem;color: #D32F2F;"></i>
+          <span *ngIf="usuario">Esta seguro que desea Eliminar <b>{{usuario.nombres}}</b>? No podra deshacer los
+            cambios</span>
+        </div>
+        <ng-template pTemplate="footer">
+          <button pButton pRipple icon="pi pi-times" class="p-button-rounded" label="No"
+            (click)="eliminarUsuarioDialogo= false"></button>
+          <button pButton pRipple icon="pi pi-check" class="p-button-rounded p-button-danger" label="Si"
+            (click)="confirmarEliminarUsuario()"></button>
+        </ng-template>
+      </p-dialog>
+      <form novalidate [formGroup]="personaForm">
+      <p-dialog [(visible)]="editarUsuarioDialogo" [style]="{width: '80%',height:'58%' }" header="Editar Usuario" [modal]="true" class="p-fluid" (onHide)="cerrarNuevoUsuario()">
+        <ng-template pTemplate="content">
+          <br>
+            <div class="flex flex-column h-12rem">
+              <div class="grid formgrid">
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="nombres" pInputText>
+                    <label for="float-input">Nombres*</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="primerApellido" pInputText>
+                    <label for="float-input">Primer Apellido*</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="segundoApellido" pInputText>
+                    <label for="float-input">Segundo Apellido*</label>
+                  </span>
+                </div>
+              </div>
+              <br>
+              <div class="grid formgrid">
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <p-calendar [showIcon]="true" dateFormat="dd/mm/yy" formControlName="fechaNacimiento" inputId="icon"></p-calendar>
+                    <label for="float-input">Fecha Nacimiento*</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="numeroDocumento" pInputText>
+                    <label for="float-input">No. Documento*</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="complemento" pInputText>
+                    <label for="float-input">Complemento</label>
+                  </span>
+                </div>
+              </div>
+              <br>
+              <div class="grid formgrid">
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <p-dropdown [options]="listaExpedicion" formControlName="expedicion"
+                      optionValue="identificadorClasificadorDetalle" optionLabel="nombreClasificadorDetalle"
+                      [showClear]="true"></p-dropdown>
+                    <label for="float-input">Expedicion</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <p-dropdown [options]="listaProfesion" formControlName="idGrupoProfesion"
+                      optionValue="idGrupoProfesion" optionLabel="nombreDescripcionProfesion"
+                      [showClear]="true"></p-dropdown>
+                    <label for="float-input">Profesion</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="matriculaProfesional" pInputText>
+                    <label for="float-input">Matricula Profesional</label>
+                  </span>
+                </div>
+              </div>
+              <br>
+              <div class="grid formgrid">
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="email" formControlName="correoElectronico" pInputText>
+                    <label for="float-input">Correo Electronico*</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <input type="text" formControlName="telefono" pInputText>
+                    <label for="float-input">Telefono movil*</label>
+                  </span>
+                </div>
+                <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                  <span class="p-float-label">
+                    <p-dropdown [options]="listaEstado" formControlName="idcEstado" optionValue="identificadorClasificadorDetalle" optionLabel="nombreClasificadorDetalle" [showClear]="true"></p-dropdown>
+                    <label for="float-input">Estado</label>
+                  </span>
+                </div>
+              </div>
+            </div>
+        </ng-template>
+        <ng-template pTemplate="footer">
+          <button pButton pRipple type="button" label="Cancelar" (click)="cerrarEditarUsuario()" icon="pi pi-times" class="p-button-text"></button>
+          <button pButton pRipple type="submit" [disabled]="personaForm.invalid" (click)="confirmarEditarUsuario()" label="Guardar" icon="pi pi-check"  class="p-button-text"></button>
+        </ng-template>
+      </p-dialog>
+    </form>
+      <p-dialog [(visible)]="nuevoUsuarioDialog" [style]="{width: '80%',height:'75%' }" header="Agregar/editar Perfil"
+        [modal]="true" class="p-fluid">
+        <br>
+        <div class="grid formgrid">
+          <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+            <span class="p-float-label">
+              <input type="text" pInputText>
+              <label for="float-input">No. Documento</label>
+            </span>
+          </div>
+          <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+            <span class="p-float-label">
+              <input type="text" pInputText>
+              <label for="float-input">Complemento</label>
+            </span>
+          </div>
+          <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+            <span class="p-float-label">
+              <p-calendar [showIcon]="true" inputId="icon"></p-calendar>
+              <label for="float-input">Fecha Nacimiento</label>
+            </span>
+          </div>
+        </div>
+        <br>
+        <div class="grid formgrid">
+          <div class="col-12 mb-2 lg:col-8 lg:mb-0"></div>
+          <div class="col-12 mb-2 lg:col-2 lg:mb-0">
+            <button pButton pRipple icon="pi pi-search" class="p-button-rounded" label="Buscar"></button>
+          </div>
+          <div class="col-12 mb-2 lg:col-2 lg:mb-0">
+            <button pButton pRipple icon="pi pi-check" class="p-button-rounded p-button-danger"
+              label="Limpiar"></button>
+          </div>
+        </div>
+        <hr>
+        <ng-template pTemplate="content">
+          <p-stepper>
+            <p-stepperPanel header="Datos generales del usuario">
+              <ng-template pTemplate="content" let-nextCallback="nextCallback" let-index="index">
+                <form novalidate [formGroup]="personaForm">
+                  <div class="flex flex-column h-12rem">
+                    <div class="grid formgrid">
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="nombres" pInputText>
+                          <label for="float-input">Nombres*</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="primerApellido" pInputText>
+                          <label for="float-input">Primer Apellido*</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="segundoApellido" pInputText>
+                          <label for="float-input">Segundo Apellido*</label>
+                        </span>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="grid formgrid">
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <p-calendar [showIcon]="true" formControlName="fechaNacimiento" inputId="icon"></p-calendar>
+                          <label for="float-input">Fecha Nacimiento*</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="numeroDocumento" pInputText>
+                          <label for="float-input">No. Documento*</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="complemento" pInputText>
+                          <label for="float-input">Complemento</label>
+                        </span>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="grid formgrid">
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <p-dropdown [options]="listaExpedicion" formControlName="expedicion"
+                            optionValue="identificadorClasificadorDetalle" optionLabel="nombreClasificadorDetalle"
+                            [showClear]="true"></p-dropdown>
+                          <label for="float-input">Expedicion</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <p-dropdown [options]="listaProfesion" formControlName="idGrupoProfesion"
+                            optionValue="idGrupoProfesion" optionLabel="nombreDescripcionProfesion"
+                            [showClear]="true"></p-dropdown>
+                          <label for="float-input">Profesion</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="matriculaProfesional" pInputText>
+                          <label for="float-input">Matricula Profesional</label>
+                        </span>
+                      </div>
+                    </div>
+                    <br>
+                    <div class="grid formgrid">
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="email" formControlName="correoElectronico" pInputText>
+                          <label for="float-input">Correo Electronico*</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <input type="text" formControlName="telefono" pInputText>
+                          <label for="float-input">Telefono movil*</label>
+                        </span>
+                      </div>
+                      <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                        <span class="p-float-label">
+                          <p-dropdown [options]="listaEstado" formControlName="idcEstado" optionValue="identificadorClasificadorDetalle" optionLabel="nombreClasificadorDetalle" [showClear]="true"></p-dropdown>
+                          <label for="float-input">Estado</label>
+                        </span>
+                      </div>
+                    </div>
+                    <div class="grid formgrid">
+                      <div class="flex py-4">
+                        <p-button label="Siguiente" type="submit" [disabled]="personaForm.invalid"
+                          (onClick)="nextCallback.emit()" />
+                      </div>
+                    </div>
+                  </div>
+                </form>
+              </ng-template>
+            </p-stepperPanel>
+            <p-stepperPanel header="Asignación de nivel de accesos">
+              <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
+                let-index="index">
+                <form novalidate [formGroup]="nivelForm">
+                  <div class="grid formgrid">
+                    <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                      <span class="p-float-label">
+                        <p-dropdown [options]="listaSistemas" formControlName="idSistema" optionValue="idSistema"
+                          optionLabel="identificadorSistema" [(ngModel)]="sistemaSeleccionado"
+                          (onChange)="cargarPerfiles();" [showClear]="true"></p-dropdown>
+                        <label for="float-input">Sistema</label>
+                      </span>
+                    </div>
+                    <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                      <span class="p-float-label">
+                        <p-dropdown [options]="listaNiveles" formControlName="idcNivel"
+                          optionValue="identificadorClasificadorDetalle" optionLabel="nombreClasificadorDetalle"
+                          [showClear]="true"></p-dropdown>
+                        <label for="float-input">Nivel</label>
+                      </span>
+                    </div>
+                    <div class="col-12 mb-2 lg:col-4 lg:mb-0">
+                      <span class="p-float-label">
+                        <p-dropdown [options]="listaDepartamento" formControlName="codDepartamento"
+                          optionValue="codDepartamento" optionLabel="departamento" [showClear]="true"></p-dropdown>
+                        <label for="float-input">Departamento</label>
+                      </span>
+                    </div>
+                  </div>
+                  <div class="grid formgrid">
+                    <div class="flex py-4 gap-2">
+                      <p-button label="Anterior" severity="secondary" (onClick)="prevCallback.emit()" />
+                      <p-button label="Siguiente" type="submit" [disabled]="nivelForm.invalid"
+                        (onClick)="nextCallback.emit()" />
+                    </div>
+                  </div>
+                </form>
+              </ng-template>
+            </p-stepperPanel>
+            <p-stepperPanel header="Asignación de perfiles">
+              <ng-template pTemplate="content" let-prevCallback="prevCallback" let-nextCallback="nextCallback"
+                let-index="index">
+                <form novalidate [formGroup]="perfilForm" (ngSubmit)="mostrarDialogoUsuarioGuardar()">
+                  <div class="flex flex-column h-12rem">
+                    <div class="grid formgrid">
+                      <p-table [value]="listaPerfiles" [tableStyle]="{ 'min-width': '50rem' }" responsiveLayout="scroll"
+                        [rows]="5" [paginator]="true">
+                        <ng-template pTemplate="header">
+                          <tr>
+                            <th>Perfil</th>
+                            <th>Descripción</th>
+                            <th>Asignado</th>
+                          </tr>
+                        </ng-template>
+                        <ng-template pTemplate="body" let-perfil>
+                          <tr>
+                            <td>{{ perfil.nombrePerfil}}</td>
+                            <td>{{ perfil.descripcionPerfil}}</td>
+                            <td><p-checkbox name="group2" value="nivel" [value]="perfil.idPerfil"
+                                [inputId]="perfil.idPerfil" formControlName="colIdPerfiles"
+                                [(ngModel)]="colIdPerfiles"></p-checkbox></td>
+                          </tr>
+                        </ng-template>
+                      </p-table>
+                    </div>
+                    <div class="grid formgrid">
+                      <div class="flex py-4 gap-2">
+                        <p-button label="Anterior" severity="secondary" (onClick)="prevCallback.emit()" />
+                        <p-button label="Guardar" type="submit" />
+                      </div>
+                    </div>
+                  </div>
+
+                </form>
+              </ng-template>
+            </p-stepperPanel>
+          </p-stepper>
+
+        </ng-template>
+      </p-dialog>
+    </div>
+  </div>
+</div>

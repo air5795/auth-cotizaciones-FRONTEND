@@ -1,0 +1,27 @@
+
+<div class="login-body">
+  <div class="login-panel p-fluid">
+    <form novalidate (ngSubmit)="ingresar()" [formGroup]="restriccionForm">
+      <div class="grid grid-nogutter">
+          <div class="col-12 login-header">
+              <h1>CBES-INGRESO</h1>
+              <h2>Seleccione Opcion</h2>
+              <img src="assets/layout/images/logo.png">
+          </div>
+          <div class="col-12">
+            <div class="field">
+                <p-dropdown [options]="restricciones" formControlName="selectedRestriccion"  optionValue="idUsuarioRestriccion" optionLabel="nombre" [showClear]="true" placeholder="Seleccion Rol"></p-dropdown>
+            </div>
+          </div>
+          <div class="col-12 button-container">
+            <div class="field">
+              <button pButton type="submit" [disabled]="restriccionForm.invalid" label="Seleccionar" icon="pi pi-check"></button>
+            </div>
+            <div class="field">
+              <p-button type="button" label="Cancelar" (onClick)="cancelarIngreso()" severity="danger"  icon="pi pi-times"></p-button>
+            </div>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>
